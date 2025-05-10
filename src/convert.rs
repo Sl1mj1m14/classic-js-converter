@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use thiserror::Error;
 
-use mc_classic_js::{ChangedBlocks, JSLevel, Data};
+use mc_classic_js::{ChangedBlocks, Data, JSLevel, Settings};
 use mc_classic::Level;
 
 #[derive(Error, Debug)]
@@ -83,6 +83,7 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
         match tile {
             1 => tile_map[i] = 2, //Stone
             2 => tile_map[i] = 1, //Grass Block
+            3 => tile_map[i] = 3, //Dirt
             4 => tile_map[i] = 9, //Cobblestone
             5 => tile_map[i] = 4, //Planks
             6 => tile_map[i] = 8, //Sapling
@@ -137,13 +138,19 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
     //Converting the tile map to an array of changed blocks
     let mut changed_blocks: HashMap<String, mc_classic_js::ChangedBlocks> = HashMap::new();
 
+    let world_size: i32 = if x >= z {x} else {z};
+    let seed1: i64 = if seed > 0 {seed} else {1}; //Replace 1 with a default seed from a config file
+    let tile_map1: Vec<u8> = mc_classic_js::get_tile_map(world_size, seed1);
+
     println!("Converting tiles to changed blocks");
     if tile_map.len() > 0 {
         for i in 0..y {
             for j in 0..z {
                 for k in 0..x {
-                    let key: String = String::from(format!(r#""p{}_{}_{}":"#,k,i,j));
-                    changed_blocks.insert(key, ChangedBlocks {a: 1, bt: tile_map[((i*z*x) + (j*x) + k) as usize]});
+                    if (tile_map[((i*z*x) + (j*x) + k) as usize] != tile_map1[((i*z*x) + (j*x) + k) as usize]) {
+                        let key: String = String::from(format!(r#""p{}_{}_{}":"#,k,i,j));
+                        changed_blocks.insert(key, ChangedBlocks {a: 1, bt: tile_map[((i*z*x) + (j*x) + k) as usize]});
+                    }
                 }
             }
         }
@@ -151,26 +158,25 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
 
     println!("Writing javascript world");
     //Creating JSLevel object
-    let world_size: i32 = if x >= z {x} else {z};
-    let seed1: i64 = if seed > 0 {seed} else {1}; //Replace 1 with a default seed from a config file
 
-    let mut level: JSLevel = JSLevel {
+    let level: JSLevel = JSLevel {
         worldSeed: seed1,
         changedBlocks: changed_blocks,
         worldSize: world_size,
         version: 1
     };
 
-    println!("Optimizing level");
-    //Optimizing Level
-    let tile_map1: Vec<u8> = mc_classic_js::get_tile_map(world_size, seed1);
-    level = mc_classic_js::deserialize_saved_game(mc_classic_js::serialize_saved_game(level, tile_map1, opt));
+    println!("We have this many changed blocks right now: {:?}", level.changedBlocks.len());
+
+    //println!("Optimizing level");
+    //Optimizing Leve
+    //level = mc_classic_js::deserialize_saved_game(mc_classic_js::serialize_saved_game(level, tile_map, opt));
+
+    println!("Optimized down changed blocks to {:?}", level.changedBlocks.len());
 
     //Grabbing Username
     let mut settings: Settings = Settings::default();
-    if classic.Username.is_some()
-}
+    if classic.creator.is_some() {settings.username = classic.creator.unwrap()}
 
-pub fn write_to_js (level: JSLevel, path: String) -> Result<(),ConversionError> {
-
+    return Ok(Data {js_level: level, settings: settings})
 }

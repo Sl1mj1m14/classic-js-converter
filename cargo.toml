@@ -9,5 +9,5 @@ thiserror = "2.0.9"
 directories = "5.0.1"
 rfd = "0.15.2"
 
-mc-classic-js = "0.2.0"
-mc-classic = { git = "https://github.com/Sl1mj1m14/rust-mc-classic.git" }
+mc-classic-js = "0.2.1"
+mc-classic = "0.1.0"
