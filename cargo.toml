@@ -1,0 +1,13 @@
+[package]
+name = "classic-js-converter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.30.0"
+thiserror = "2.0.9"
+directories = "5.0.1"
+rfd = "0.15.2"
+
+mc-classic-js = "0.2.0"
+mc-classic = { git = "https://github.com/Sl1mj1m14/rust-mc-classic.git" }
