@@ -12,8 +12,10 @@ use mc_classic_js;
 mod convert;
 
 const INPUT_FOLDER: &str = "input";
-const OUTPUT_FOLDER: &str = "output";
 const INPUT_FILE: &str = "level.dat";
+const OUTPUT_MODE: u8 = 0;
+const OUTPUT_FOLDER: &str = "output";
+const OUTPUT_FILE: &str = "localStorage.js";
 const OUTPUT_WEBSITE: &str = "https://classic.minecraft.net";
 
 #[derive(Deserialize, Debug)]
@@ -30,7 +32,9 @@ struct Input {
 
 #[derive(Deserialize, Debug)]
 struct Output {
+    output_mode: u8,
     output_folder: String,
+    output_file: String,
     output_website: String
 }
 
@@ -67,8 +71,12 @@ fn main () {
         }
     };
 
-    if let Err(e) = fs::create_dir(&config.input_settings.input_folder) {throw(GeneralError::FileError(e))}
-    if let Err(e) = fs::create_dir(&config.output_settings.output_folder) {throw(GeneralError::FileError(e))}
+    if !fs::exists(&config.input_settings.input_folder).unwrap() {
+        if let Err(e) = fs::create_dir(&config.input_settings.input_folder) {throw(GeneralError::FileError(e))}
+    }
+    if !fs::exists(&config.output_settings.output_folder).unwrap() {
+        if let Err(e) = fs::create_dir(&config.output_settings.output_folder) {throw(GeneralError::FileError(e))}
+    }
 
     println!("Loading level");
     let classic: mc_classic::Level = match mc_classic::read_level(config.input_settings.input_folder + "/" + &config.input_settings.input_file) {
@@ -92,13 +100,27 @@ fn main () {
     let serialized: [String; 2] = mc_classic_js::serialize_data(js);
 
     println!("Writing level");
-    _ = match mc_classic_js::write_data(config.output_settings.output_folder, serialized, config.output_settings.output_website)  {
-        Ok(c) => c,
-        Err(e) => {
-            throw(GeneralError::WriteError(e));
-            exit(1)
+
+    match config.output_settings.output_mode {
+        0 => {
+             _ = match mc_classic_js::write_data(config.output_settings.output_folder, serialized, config.output_settings.output_website)  {
+                Ok(c) => c,
+                Err(e) => {
+                    throw(GeneralError::WriteError(e));
+                    exit(1)
+                }
+            };
+        },
+        1 => {
+           _ = mc_classic_js::write_local_storage_command(
+            config.output_settings.output_folder + "/" + &config.output_settings.output_file,
+            serialized)
         }
-    };
+        _ => {
+            println!("Output mode invalid, expected 0 or 1 but found {}",config.output_settings.output_mode);
+            exit(1);
+        }
+    }
 }
 
 fn build_settings () -> Result<(),GeneralError>{
@@ -113,10 +135,13 @@ fn build_settings () -> Result<(),GeneralError>{
     file.write(format!(r#"input-file = "{INPUT_FILE}""#).as_bytes())?;
     file.write("\n\n".as_bytes())?;
     file.write("[output-settings]\n".as_bytes())?;
+    file.write(format!(r#"output-mode = {OUTPUT_MODE}"#).as_bytes())?;
+    file.write("\n".as_bytes())?;
     file.write(format!(r#"output-folder = "{OUTPUT_FOLDER}""#).as_bytes())?;
     file.write("\n".as_bytes())?;
+    file.write(format!(r#"output-file = "{OUTPUT_FILE}""#).as_bytes())?;
+    file.write("\n".as_bytes())?;
     file.write(format!(r#"output-website = "{OUTPUT_WEBSITE}""#).as_bytes())?;
-
     return Ok(())
 }
 
