@@ -15,3 +15,8 @@ Cargo.lock
 
 # Debug folders and files
 test/
+
+# Empty folders for builds
+input/
+output/
+config.toml

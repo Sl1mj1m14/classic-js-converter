@@ -166,15 +166,8 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
         version: 1
     };
 
-    println!("We have this many changed blocks right now: {:?}", level.changedBlocks.len());
-
-    //println!("Optimizing level");
-    //Optimizing Leve
-    //level = mc_classic_js::deserialize_saved_game(mc_classic_js::serialize_saved_game(level, tile_map, opt));
-
-    println!("Optimized down changed blocks to {:?}", level.changedBlocks.len());
-
     //Grabbing Username
+    println!("Grabbing username");
     let mut settings: Settings = Settings::default();
     if classic.creator.is_some() {settings.username = classic.creator.unwrap()}
 

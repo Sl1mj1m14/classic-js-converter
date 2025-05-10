@@ -4,10 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-eframe = "0.30.0"
 thiserror = "2.0.9"
-directories = "5.0.1"
-rfd = "0.15.2"
+toml = "0.8.22"
+serde = "1.0.219"
+rusqlite = "0.35.0"
 
 mc-classic-js = "0.2.1"
 mc-classic = "0.1.0"
+
