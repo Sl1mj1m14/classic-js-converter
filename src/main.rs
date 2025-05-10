@@ -53,7 +53,13 @@ pub enum GeneralError {
     ConversionError(#[from] convert::ConversionError),
 
     #[error("Write Error")]
-    WriteError(#[from] rusqlite::Error)       
+    WriteError(#[from] rusqlite::Error),
+
+    #[error("Could not find {0}")]
+    MissingFile(String),
+
+    #[error("Output mode invalid, expected 0 or 1 but found {0}")]   
+    InvalidMode(u8)    
 }
 
 fn main () {
@@ -79,7 +85,10 @@ fn main () {
     }
 
     println!("Loading level");
-    let classic: mc_classic::Level = match mc_classic::read_level(config.input_settings.input_folder + "/" + &config.input_settings.input_file) {
+    if !fs::exists(config.input_settings.input_folder.clone() + "/" + &config.input_settings.input_file).unwrap() {
+        throw(GeneralError::MissingFile(config.input_settings.input_folder.clone() + "/" + &config.input_settings.input_file));
+    }
+    let classic: mc_classic::Level = match mc_classic::read_level(config.input_settings.input_folder.clone() + "/" + &config.input_settings.input_file) {
         Ok(c) => c,
         Err(e) => {
             throw(GeneralError::ClassicError(e));
@@ -117,10 +126,16 @@ fn main () {
             serialized)
         }
         _ => {
-            println!("Output mode invalid, expected 0 or 1 but found {}",config.output_settings.output_mode);
+            throw(GeneralError::InvalidMode(config.output_settings.output_mode));
             exit(1);
         }
     }
+
+    println!("Press Enter to Exit");
+    let mut s: String = String::from("");
+    std::io::stdin().read_line(&mut s).expect("");
+    return;
+
 }
 
 fn build_settings () -> Result<(),GeneralError>{
@@ -146,6 +161,9 @@ fn build_settings () -> Result<(),GeneralError>{
 }
 
 fn throw (e: GeneralError) {
-        eprintln!("Error: {:#?}", e);
-        std::process::exit(1)
+    eprintln!("Error: {:#?}", e);
+    println!("Press Enter to Exit");
+    let mut s: String = String::from("");
+    std::io::stdin().read_line(&mut s).expect("");
+    std::process::exit(1)
 }
