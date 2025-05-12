@@ -148,7 +148,7 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
             for j in 0..z {
                 for k in 0..x {
                     if (tile_map[((i*z*x) + (j*x) + k) as usize] != tile_map1[((i*world_size*world_size) + (j*world_size) + k) as usize]) {
-                        let key: String = String::from(format!(r#""p{}_{}_{}":"#,k,i,j));
+                        let key: String = String::from(format!(r#""p{}_{}_{}":"#,j,i,k));
                         changed_blocks.insert(key, ChangedBlocks {a: 1, bt: tile_map[((i*z*x) + (j*x) + k) as usize]});
                     }
                 }
