@@ -12,7 +12,7 @@ pub enum ConversionError {
     AmbiguousWorldSize()
 }
 
-pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,ConversionError> {
+pub fn classic_to_js (classic: Level, seed: i64, _opt: u8) -> Result<Data,ConversionError> {
     let mut tile_map: Vec<u8> = Vec::new();
 
     if classic.blocks.is_some() { tile_map = classic.blocks.unwrap().clone() }
@@ -139,7 +139,7 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
     let mut changed_blocks: HashMap<String, mc_classic_js::ChangedBlocks> = HashMap::new();
 
     let world_size: i32 = if x >= z {x} else {z};
-    let seed1: i64 = if seed > 0 {seed} else {1}; //Replace 1 with a default seed from a config file
+    let seed1: i64 = if seed != 0 {seed} else {1}; //Replace 1 with a default seed from a config file
     let tile_map1: Vec<u8> = mc_classic_js::get_tile_map(world_size, seed1);
 
     println!("Converting tiles to changed blocks");
@@ -147,7 +147,7 @@ pub fn classic_to_js (classic: Level, seed: i64, opt: u8) -> Result<Data,Convers
         for i in 0..y {
             for j in 0..z {
                 for k in 0..x {
-                    if (tile_map[((i*z*x) + (j*x) + k) as usize] != tile_map1[((i*world_size*world_size) + (j*world_size) + k) as usize]) {
+                    if tile_map[((i*z*x) + (j*x) + k) as usize] != tile_map1[((i*world_size*world_size) + (j*world_size) + k) as usize] {
                         let key: String = String::from(format!(r#""p{}_{}_{}":"#,j,i,k));
                         changed_blocks.insert(key, ChangedBlocks {a: 1, bt: tile_map[((i*z*x) + (j*x) + k) as usize]});
                     }

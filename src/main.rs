@@ -4,7 +4,7 @@ use std::process::exit;
 
 use serde::Deserialize;
 use thiserror::Error;
-use rusqlite::Error;
+//use rusqlite::Error;
 
 use mc_classic;
 use mc_classic_js;
@@ -17,11 +17,13 @@ const OUTPUT_MODE: u8 = 0;
 const OUTPUT_FOLDER: &str = "output";
 const OUTPUT_FILE: &str = "localStorage.js";
 const OUTPUT_WEBSITE: &str = "https://classic.minecraft.net";
+const WORLD_SEED: i32 = 1;
 
 #[derive(Deserialize, Debug)]
 struct Config {
     input_settings: Input,
-    output_settings: Output
+    output_settings: Output,
+    world_settings: World
 }
 
 #[derive(Deserialize, Debug)]
@@ -36,6 +38,11 @@ struct Output {
     output_folder: String,
     output_file: String,
     output_website: String
+}
+
+#[derive(Deserialize, Debug)]
+struct World {
+    seed: i64
 }
 
 #[derive(Error, Debug)]
@@ -97,7 +104,7 @@ fn main () {
     };
 
     println!("Converting level");
-    let js: mc_classic_js::Data = match convert::classic_to_js(classic, 1, 1) {
+    let js: mc_classic_js::Data = match convert::classic_to_js(classic, config.world_settings.seed, 1) {
         Ok(c) => c,
         Err(e) => {
             throw(GeneralError::ConversionError(e));
@@ -157,6 +164,9 @@ fn build_settings () -> Result<(),GeneralError>{
     file.write(format!(r#"output-file = "{OUTPUT_FILE}""#).as_bytes())?;
     file.write("\n".as_bytes())?;
     file.write(format!(r#"output-website = "{OUTPUT_WEBSITE}""#).as_bytes())?;
+    file.write("\n\n".as_bytes())?;
+    file.write("[world-settings]\n".as_bytes())?;
+    file.write(format!(r#"seed = {WORLD_SEED}"#).as_bytes())?;
     return Ok(())
 }
 
