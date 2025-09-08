@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-thiserror = "2.0.9"
-toml = "0.8.22"
+thiserror = "2.0.16"
+toml = "0.9.5"
 serde = "1.0.219"
-rusqlite = "0.35.0"
+rusqlite = "0.37.0"
 
-mc-classic-js = "0.2.1"
-mc-classic = "0.1.0"
+mc-classic-js = "0.2.4"
+mc-classic = "0.1.2"
 
